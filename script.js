@@ -13,24 +13,42 @@ search_button.addEventListener("click", (event) => {
     fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${input_value.value}`).then(
         item => item.json().then(
             data => {
-                console.log(data);
+                console.log(data)
+                // if the word doesn't exist in the dictionary
+                if (data.message !== undefined) {
+                    feedback.innerHTML = `
+                    <p>${data.message}</p>
+                    `;
+                }
                 // now render necessary items from data
-                feedback.innerHTML = `
+                else {
+                    // then place all necessary items into their respective HTML elements on DOM
+                    feedback.innerHTML = `
                 <p>Search results for '${data[0].word}'</p>
                 `;
                 for (let item of data[0].meanings) {
-                    let d = item.definitions.map(data => `<p>${data.definition}</p>`);
+                    let d = item.definitions.map(data => {
+                        let x = `<li>${data.definition}`;
+                        if (data.example) {
+                            x += `<br><span class="example">"${data.example}"</span>`;
+                        }
+                        if (data.synonyms.length !== 0) {
+                            x += `<br><span class="synonyms">synonyms: ${data.synonyms.join(", ")}</span>`
+                        }
+                        return x + `</li>`;
+                    });
+
                     feedback.innerHTML += `
                     <div class="meaning">
-                    <p>${item.partOfSpeech}</p>
+                    <p class="partOfSpeech">${item.partOfSpeech}</p>
+                    <ul>
                     ${d.join("")}
-                    
+                    </ul>
                     </div>
                     `;
+                }
                 }
             }
         )
     );
-
-    // then place all necessary items into their respective HTML elements on DOM
 });
